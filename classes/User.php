@@ -10,7 +10,7 @@ class User{
     private ?string $username = null;
     private ?string $encryptedKey = null;
 
-    public function __construct(Database $db){
+    public function __construct(){
         $this->db = Database::getInstance();
     }
 
@@ -60,6 +60,9 @@ class User{
         }
 
         $plainKey = Encryptor::decrypt($user['encrypted_key'], $plainPassword);
+        if ($plainKey === false || $plainKey === null) {
+            return ['success' => false, 'message' => 'Login failed.'];
+        }
 
         $_SESSION['user_id']  = $user['id'];
         $_SESSION['username'] = $user['username'];
@@ -72,13 +75,14 @@ class User{
     }
     public static function requireLogin(): void {
         if (!self::isLoggedIn()) {
-            header('Location: /passmanager/views/login.php');
+            header('Location: /php_projektas/views/login.php');
             exit;
         }
     }
     public static function logout(): void {
+        $_SESSION = [];
         session_destroy();
-        header('Location: /passmanager/views/login.php');
+        header('Location: /php_projektas/views/login.php');
         exit;
     }
 
