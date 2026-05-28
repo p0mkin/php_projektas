@@ -54,7 +54,7 @@ class User{
             return ['success' => false, 'message' => 'Invalid username or password.'];
         }
         $user = $rows[0];
-        // 2. Verify the password against the stored hash
+        // Verify password against stored hash
         if (!password_verify($plainPassword, $user['password_hash'])) {
             return ['success' => false, 'message' => 'Invalid username or password.'];
         }
