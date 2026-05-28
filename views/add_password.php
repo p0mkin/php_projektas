@@ -44,6 +44,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'save') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="../assets/style.css">
     <title>Add Password</title>
 </head>
 <body>

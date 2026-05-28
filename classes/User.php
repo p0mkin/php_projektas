@@ -13,8 +13,41 @@ class User{
     public function __construct(){
         $this->db = Database::getInstance();
     }
+    public function changePassword(string $oldPassword, string $newPassword): array {
+        if (strlen($newPassword) < 6) {
+            return ['success' => false, 'message' => 'New password must be at least 6 characters.'];
+        }
+        $rows = $this->db->query(
+            "SELECT password_hash, encrypted_key FROM users WHERE id = ?",
+            [$_SESSION['user_id']]
+        );
+        if (empty($rows)) {
+            return ['success' => false, 'message' => 'User not found.'];
+        }
+        $user = $rows[0];
+        if (!password_verify($oldPassword, $user['password_hash'])) {
+            return ['success' => false, 'message' => 'Current password is incorrect.'];
+        }
+        $plainKey = Encryptor::decrypt($user['encrypted_key'], $oldPassword);
+        if ($plainKey === false) {
+            return ['success' => false, 'message' => 'Could not decrypt key.'];
+        }
+        //  Re-encrypt the same KEY using the NEW password
+        $newEncryptedKey = Encryptor::encrypt($plainKey, $newPassword);
+        //  Hash the new password
+        $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
+        //  Update both values in one query — atomic, either both save or neither does
+        $this->db->execute(
+            "UPDATE users SET password_hash = ?, encrypted_key = ? WHERE id = ?",
+            [$newHash, $newEncryptedKey, $_SESSION['user_id']]
+        );
 
-    public function Register(string $username, string $plainPassword):array{
+        //  Update the session key so current session still works
+        $_SESSION['user_key'] = $plainKey;
+
+        return ['success' => true, 'message' => 'Password changed successfully.'];
+    }
+    public function register(string $username, string $plainPassword):array{
 
         if (empty($username) || empty($plainPassword)) {
             return ['success' => false, 'message' => 'All fields are required.'];
@@ -63,6 +96,8 @@ class User{
         if ($plainKey === false || $plainKey === null) {
             return ['success' => false, 'message' => 'Login failed.'];
         }
+
+        session_regenerate_id(true); //  improves session security.
 
         $_SESSION['user_id']  = $user['id'];
         $_SESSION['username'] = $user['username'];

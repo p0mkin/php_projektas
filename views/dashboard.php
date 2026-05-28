@@ -14,11 +14,13 @@ $savedMsg  = isset($_GET['saved']) ? 'Password saved!' : '';
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="../assets/style.css">
     <title>Dashboard</title>
 </head>
 <body>
 <h1>Welcome, <?= htmlspecialchars($_SESSION['username']) ?>!</h1>
 <a href="add_password.php">+ Add password</a> |
+<a href="change_password.php">Change password</a> |
 <a href="logout.php">Log out</a>
 
 <?php if ($savedMsg): ?>
